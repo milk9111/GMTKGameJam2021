@@ -1,3 +1,4 @@
+using System;
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
@@ -6,16 +7,13 @@ public class EnemyDeath : MonoBehaviour
 {
     public bool invincible;
 
+    public AudioClip deathSound;
+
+    private Guid _soundId;
+
     // Start is called before the first frame update
     void Start()
     {
-        
-    }
-
-    // Update is called once per frame
-    void Update()
-    {
-        
     }
 
     public void Kill()
@@ -24,6 +22,9 @@ public class EnemyDeath : MonoBehaviour
         {
             return;
         }
+
+        SoundManager.Instance.Play(deathSound);
+
         Destroy(gameObject);
     }
 }

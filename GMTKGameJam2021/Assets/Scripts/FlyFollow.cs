@@ -14,7 +14,9 @@ public class FlyFollow : MonoBehaviour
     public float yVelocity;
     public float xVelocity;
 
-    public SpriteRenderer humanRenderer;
+    public Transform humanScale;
+
+    public AudioClip followSound;
 
     private Transform _target;
     private Rigidbody2D _rb;
@@ -35,19 +37,24 @@ public class FlyFollow : MonoBehaviour
 
         _target = CalculateFlyFollowTarget();
 
-        var newY = Mathf.SmoothDamp(transform.position.y, _target.position.y, ref yVelocity, smoothTime * Time.deltaTime);
-        var newX = Mathf.SmoothDamp(transform.position.x, _target.position.x, ref xVelocity, smoothTime * Time.deltaTime);
+        var newY = Mathf.SmoothDamp(transform.position.y, _target.position.y, ref yVelocity, smoothTime * Time.smoothDeltaTime);
+        var newX = Mathf.SmoothDamp(transform.position.x, _target.position.x, ref xVelocity, smoothTime * Time.smoothDeltaTime);
 
         _rb.MovePosition(new Vector2(newX, newY));
     }
 
     public void SetFollow(bool newFollow)
     {
+        if (newFollow)
+        {
+            SoundManager.Instance.Play(followSound);
+        }
+
         follow = newFollow;
     }
 
     public Transform CalculateFlyFollowTarget()
     {
-        return humanRenderer.flipX ? flyFollowTarget1 : flyFollowTarget2;
+        return humanScale.localScale.x < 0 ? flyFollowTarget1 : flyFollowTarget2;
     }
 }

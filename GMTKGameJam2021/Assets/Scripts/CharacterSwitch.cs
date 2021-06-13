@@ -24,16 +24,20 @@ public class CharacterSwitch : MonoBehaviour
 
     public TargetTracker targetTracker;
 
-    private SpriteRenderer _humanRenderer;
-    private SpriteRenderer _flyingRenderer;
+    private SortOrderAdjuster _humanAdjuster;
+    private SortOrderAdjuster _flyingAdjuster;
 
     public bool disabled = false;
+
+    private bool _lastHumanMovementActive;
+    private bool _lastFlyingMovementActive;
+    private bool _lastHumanAttackDisabled;
 
     // Start is called before the first frame update
     void Start()
     {
-        _humanRenderer = human.GetComponent<SpriteRenderer>();
-        _flyingRenderer = flying.GetComponent<SpriteRenderer>();
+        _humanAdjuster = human.GetComponent<SortOrderAdjuster>();
+        _flyingAdjuster = flying.GetComponent<SortOrderAdjuster>();
 
         SwitchTo(startingCharacter);
     }
@@ -44,6 +48,12 @@ public class CharacterSwitch : MonoBehaviour
         if (disabled)
         {
             return;
+        }
+
+        if (Input.GetKeyDown(KeyCode.E))
+        {
+            SwitchTo(CharacterTypes.Human);
+            flyFollow.SetFollow(true);
         }
 
         if (Input.GetKeyDown(KeyCode.F))
@@ -63,6 +73,28 @@ public class CharacterSwitch : MonoBehaviour
         }
     }
 
+    public void Disable()
+    {
+        _lastHumanMovementActive = humanMovement.active;
+        _lastFlyingMovementActive = flyingMovement.active;
+        _lastHumanAttackDisabled = humanAttack.GetDisable();
+
+        disabled = true;
+
+        flyingMovement.active = false;
+        humanMovement.active = false;
+        humanAttack.SetDisable(true);
+    }
+
+    public void Enable()
+    {
+        disabled = false;
+
+        flyingMovement.active = _lastFlyingMovementActive;
+        humanMovement.active = _lastHumanMovementActive;
+        humanAttack.SetDisable(_lastHumanAttackDisabled);
+    }
+
     private void SwitchTo(CharacterTypes characterType)
     {
         currentCharacter = characterType;
@@ -73,16 +105,16 @@ public class CharacterSwitch : MonoBehaviour
                 humanMovement.active = true;
                 humanAttack.SetDisable(false);
                 targetTracker.ChangeTarget(human.transform);
-                _flyingRenderer.sortingOrder = 1;
-                _humanRenderer.sortingOrder = 2;
+                _flyingAdjuster.SetSortOrder(1);
+                _humanAdjuster.SetSortOrder(2);
                 break;
             case CharacterTypes.Flying:
                 flyingMovement.active = true;
                 humanMovement.active = false;
                 humanAttack.SetDisable(true);
                 targetTracker.ChangeTarget(flying.transform);
-                _flyingRenderer.sortingOrder = 2;
-                _humanRenderer.sortingOrder = 1;
+                _flyingAdjuster.SetSortOrder(2);
+                _humanAdjuster.SetSortOrder(1);
                 flyFollow.SetFollow(false);
                 break;
         }

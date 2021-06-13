@@ -49,4 +49,9 @@ public class HumanAttack : MonoBehaviour
     {
         _disable = disable;
     }
+
+    public bool GetDisable()
+    {
+        return _disable;
+    }
 }

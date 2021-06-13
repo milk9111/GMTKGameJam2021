@@ -1,3 +1,4 @@
+using System;
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
@@ -14,21 +15,35 @@ public class HeatSeekingMissile : MonoBehaviour
 
     private Vector2 _lookAtTarget;
 
+    public AudioClip soundFx;
+
     // Start is called before the first frame update
     void Start()
     {
-        
+        SoundManager.Instance.Play(soundFx);
     }
 
     // Update is called once per frame
     void FixedUpdate()
     {
-        float newX;
-        float newY;
+        float newX = 0f;
+        float newY = 0f;
         if (_seekMovingTarget)
         {
-            newX = Mathf.Lerp(transform.position.x, _movingTarget.position.x, speed * Time.smoothDeltaTime);
-            newY = Mathf.Lerp(transform.position.y, _movingTarget.position.y, speed * Time.smoothDeltaTime);
+            if (_movingTarget == null || transform == null)
+            {
+                Destroy(gameObject);
+            }
+
+            try
+            {
+                newX = Mathf.Lerp(transform.position.x, _movingTarget.position.x, speed * Time.smoothDeltaTime);
+                newY = Mathf.Lerp(transform.position.y, _movingTarget.position.y, speed * Time.smoothDeltaTime);
+            } catch (Exception ex)
+            {
+
+            }
+            
         } else
         {
             if (Mathf.Abs(transform.position.x - _staticPosition.x) <= 0.1f && Mathf.Abs(transform.position.y - _staticPosition.y) <= 0.1f && !invincible)

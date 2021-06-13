@@ -28,16 +28,30 @@ public class HumanMovement : MonoBehaviour
 
     public FlyingMovement flyingMovement;
 
+    public AudioClip walkingSound;
+
+    public AudioClip backgroundMusic;
+    private bool _startedMusic;
+
+    private Animator _animator;
+
     void Start()
     {
         _rb = GetComponent<Rigidbody2D>();
         _renderer = GetComponent<SpriteRenderer>();
+        _animator = GetComponent<Animator>();
 
         additionalJumps = defaultAdditionalJumps;
     }
 
     void Update()
     {
+        if (!_startedMusic)
+        {
+            SoundManager.Instance.PlayMusic(backgroundMusic);
+            _startedMusic = true;
+        }
+
         if (!active)
         {
             _rb.velocity = Vector3.zero;
@@ -62,20 +76,23 @@ public class HumanMovement : MonoBehaviour
         float moveBy = x * speed;
         _rb.velocity = new Vector2(moveBy, _rb.velocity.y);
 
-        var flipX = _renderer.flipX;
+        _animator.SetBool("Walking", Mathf.Abs(moveBy) > 0);
+
+        var flipX = transform.localScale.x;
         if (x != 0)
         {
-            flipX = x < 0;
+            flipX = x < 0 ? Mathf.Abs(transform.localScale.x) * -1 : Mathf.Abs(transform.localScale.x);
         }
 
-        _renderer.flipX = flipX;
-        flyingMovement.SetFlipped(flipX);
+        transform.localScale = new Vector3(flipX, transform.localScale.y, transform.localScale.z);
+        flyingMovement.SetFlipped(flipX / Mathf.Abs(flipX));
     }
 
     void Jump()
     {
         if (Input.GetKeyDown(KeyCode.Space) && (isGrounded || Time.time - lastTimeGrounded <= rememberGroundedFor || additionalJumps > 0))
         {
+            SoundManager.Instance.Play(walkingSound);
             _rb.velocity = new Vector2(_rb.velocity.x, jumpForce);
             additionalJumps--;
         }
@@ -111,102 +128,4 @@ public class HumanMovement : MonoBehaviour
             isGrounded = false;
         }
     }
-
-    //[Range(0.01f, 1)]
-    /*public float speedMultiplier;
-    public float maximumSpeed;
-
-    public float jumpHeight = 10;
-    public LayerMask groundLayer;
-
-    private Rigidbody2D _rb;
-    private float _horizontal;
-    private bool _pressedJump;
-    private bool _pressedHorizontal;
-
-    // Start is called before the first frame update
-    void Start()
-    {
-        _rb = GetComponent<Rigidbody2D>();
-        _pressedJump = false;
-        _pressedHorizontal = false;
-    }
-
-    void Update()
-    {
-        _horizontal = Input.GetAxis("Horizontal");
-
-        var jump = Input.GetKeyDown(KeyCode.Space);
-        if (jump && IsGrounded())
-        {
-            _pressedJump = true;
-        }
-    }
-
-    void FixedUpdate()
-    {
-        var changedPos = false;
-        var x = 0f;
-        var normalizedHorizontal = Mathf.Abs(_horizontal);
-        if (normalizedHorizontal > 0.01f)
-        {
-            changedPos = true;
-            _pressedHorizontal = true;
-            x = _horizontal * speedMultiplier * Time.deltaTime;
-        }
-
-        
-
-        var y = 0f;
-        if (_pressedJump)
-        {
-            changedPos = true;
-            _pressedJump = false;
-            y = jumpHeight;
-        }
-
-        if (changedPos)
-        {
-            _rb.AddForce(new Vector2(x, 0));
-            _rb.AddForce(new Vector2(0, y), ForceMode2D.Impulse);
-        }
-
-        var speed = Vector3.Magnitude(_rb.velocity);  // test current object speed
-
-        // let go of the key so slow down
-        if (normalizedHorizontal <= 0.01f && _pressedHorizontal)
-        {
-            _pressedHorizontal = false;
-            ApplyBrake(speed * maximumSpeed);
-        }
-
-        if (speed > maximumSpeed)
-        {
-            Debug.Log("Reached max speed");
-            ApplyBrake(speed - maximumSpeed);
-        }
-    }
-
-    private void ApplyBrake(float brakeSpeed)
-    {
-        Vector3 normalisedVelocity = _rb.velocity.normalized;
-        Vector3 brakeVelocity = normalisedVelocity * brakeSpeed;  // make the brake Vector3 value
-
-        _rb.AddForce(-brakeVelocity);  // apply opposing brake force
-    }
-
-    private bool IsGrounded()
-    {
-        Vector2 position = transform.position;
-        Vector2 direction = Vector2.down;
-        float distance = 1.0f;
-
-        RaycastHit2D hit = Physics2D.Raycast(position, direction, distance, groundLayer);
-        if (hit.collider != null)
-        {
-            return true;
-        }
-
-        return false;
-    }*/
 }

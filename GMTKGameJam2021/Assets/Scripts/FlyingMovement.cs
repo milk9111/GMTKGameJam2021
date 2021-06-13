@@ -8,14 +8,12 @@ public class FlyingMovement : MonoBehaviour
     public float speed;
 
     private Rigidbody2D _rb;
-    private SpriteRenderer _renderer;
     private FlyFollow _follow;
 
     // Start is called before the first frame update
     void Start()
     {
         _rb = GetComponent<Rigidbody2D>();
-        _renderer = GetComponent<SpriteRenderer>();
         _follow = GetComponent<FlyFollow>();
     }
 
@@ -32,16 +30,16 @@ public class FlyingMovement : MonoBehaviour
         float x = Input.GetAxisRaw("Horizontal");
         float moveByX = x * speed;
 
-        var flipX = _renderer.flipX;
-        if (x != 0)
+        var flipX = transform.localScale.x;
+        if (x != 0 )
         {
-            flipX = x < 0;
+            flipX = x < 0 ? Mathf.Abs(transform.localScale.x) * -1 : Mathf.Abs(transform.localScale.x);
         }
 
         float y = Input.GetAxisRaw("Vertical");
         float moveByY = y * speed;
         _rb.velocity = new Vector2(moveByX, moveByY);
-        _renderer.flipX = flipX;
+        transform.localScale = new Vector3(flipX, transform.localScale.y, transform.localScale.z);
 
         if (x != 0 || y != 0)
         {
@@ -49,11 +47,17 @@ public class FlyingMovement : MonoBehaviour
         }
     }
 
-    public void SetFlipped(bool flipX)
+    public void SetFlipped(float flipX)
     {
         if (_follow.follow)
         {
-            _renderer.flipX = flipX;
+            var flip = Mathf.Abs(transform.localScale.x);
+            if (flipX < 0)
+            {
+                flip = -flip;
+            }
+
+            transform.localScale = new Vector3(flip, transform.localScale.y, transform.localScale.z);
         }
     }
 }

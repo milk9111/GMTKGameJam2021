@@ -10,20 +10,24 @@ public class EnemyAI : MonoBehaviour
     public float speed = 200f;
     public float nextWaypointDistance = 3f;
 
-    public SpriteRenderer spriteRenderer;
-
     private Path _path;
     private int _currentWaypoint = 0;
     private bool _reachedEndOfPath = false;
     private Seeker _seeker;
     private Rigidbody2D _rb;
     private bool _searching = true;
+    private bool _disabled = false;
 
     // Start is called before the first frame update
     void Start()
     {
         _seeker = GetComponent<Seeker>();
         _rb = GetComponent<Rigidbody2D>();
+
+        if (target == null)
+        {
+            target = FindObjectOfType<FlyingSpotlight>().transform;
+        }
 
         _searching = true;
         InvokeRepeating("UpdatePath", 0f, 0.5f);
@@ -48,7 +52,7 @@ public class EnemyAI : MonoBehaviour
 
     void FixedUpdate()
     {
-        if (!_searching || _path == null)
+        if (_disabled || !_searching || _path == null)
         {
             return;
         }
@@ -62,7 +66,11 @@ public class EnemyAI : MonoBehaviour
             _reachedEndOfPath = false;
         }
 
-        var direction = ((Vector2)_path.vectorPath[_currentWaypoint] - _rb.position).normalized;
+        var p = (Vector2)_path.vectorPath[_currentWaypoint];
+        var rbPos = _rb.position;
+        var unnormalizedDirection = p - rbPos;
+
+        var direction = unnormalizedDirection.normalized;
         var force = direction * speed * Time.deltaTime;
 
         _rb.AddForce(force);
@@ -73,14 +81,28 @@ public class EnemyAI : MonoBehaviour
             _currentWaypoint++;
         }
 
-        if (force.x >= 0.01f)
+        if (unnormalizedDirection.x > 0.3f)
         {
-            spriteRenderer.flipX = false;
+            //Debug.Log("Facing Right");
+            transform.localScale = new Vector3(Mathf.Abs(transform.localScale.x), transform.localScale.y, transform.localScale.z);
         }
-        else if (force.x <= -0.01f)
+        else if (unnormalizedDirection.x < -0.3f)
         {
-            spriteRenderer.flipX = true;
+            //Debug.Log("Facing Left: " + direction);
+            //Debug.Log($"p: {p}");
+            //Debug.Log($"rbPos: {rbPos}");
+            transform.localScale = new Vector3(-Mathf.Abs(transform.localScale.x), transform.localScale.y, transform.localScale.z);
         }
+    }
+
+    public void Disable()
+    {
+        _disabled = true;
+    }
+
+    public void Enable()
+    {
+        _disabled = false;
     }
 
     public void StopSearching()

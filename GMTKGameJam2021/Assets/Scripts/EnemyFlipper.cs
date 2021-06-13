@@ -5,8 +5,6 @@ using Pathfinding;
 
 public class EnemyFlipper : MonoBehaviour
 {
-    public SpriteRenderer _renderer;
-
     private AIPath aiPath;
 
     // Start is called before the first frame update
@@ -20,10 +18,10 @@ public class EnemyFlipper : MonoBehaviour
     {
         if (aiPath.desiredVelocity.x >= 0.01f)
         {
-            _renderer.flipX = false;
+            transform.localScale = new Vector3(Mathf.Abs(transform.localScale.x), transform.localScale.y, transform.localScale.z);
         } else if (aiPath.desiredVelocity.x <= -0.01f)
         {
-            _renderer.flipX = true;
+            transform.localScale = new Vector3(-Mathf.Abs(transform.localScale.x), transform.localScale.y, transform.localScale.z);
         }
     }
 }

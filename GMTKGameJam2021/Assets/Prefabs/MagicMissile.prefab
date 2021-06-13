@@ -116,6 +116,7 @@ MonoBehaviour:
   invincible: 0
   _movingTarget: {fileID: 0}
   _staticPosition: {x: 0, y: 0}
+  soundFx: {fileID: 8300000, guid: b8a6ad63eecdbff4e8918c8a0c885c7f, type: 3}
 --- !u!58 &6323174684949447852
 CircleCollider2D:
   m_ObjectHideFlags: 0
